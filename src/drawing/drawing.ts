@@ -80,7 +80,14 @@ export abstract class Drawing extends PluginBase {
         for (const s of this._listeners) {
             document.body.removeEventListener(s.name, s.listener);
         }
-
+        
+        // Clear static references if this drawing is being detached
+        // This prevents stale references when drawings are deleted
+        if (Drawing.hoveredObject === this) Drawing.hoveredObject = null;
+        if (Drawing.lastHoveredObject === this) Drawing.lastHoveredObject = null;
+        
+        // Reset this drawing's state
+        this._state = InteractionState.NONE;
     }
 
     get points() {

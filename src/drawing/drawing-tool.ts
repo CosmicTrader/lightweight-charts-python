@@ -56,11 +56,21 @@ export class DrawingTool {
         if (idx == -1) return;
         this._drawings.splice(idx, 1)
         d.detach();
+        
+        // Reset static references if they point to the deleted drawing
+        // This prevents stale references from blocking interactions with new drawings
+        if (Drawing.hoveredObject === d) Drawing.hoveredObject = null;
+        if (Drawing.lastHoveredObject === d) Drawing.lastHoveredObject = null;
     }
 
     clearDrawings() {
         for (const d of this._drawings) d.detach();
         this._drawings = [];
+        
+        // Reset all static references when clearing all drawings
+        Drawing.hoveredObject = null;
+        Drawing.lastHoveredObject = null;
+        // Note: _mouseIsDown is protected, but resetting the hover objects is sufficient
     }
 
     repositionOnTime() {

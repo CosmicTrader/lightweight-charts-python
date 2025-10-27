@@ -144,16 +144,21 @@ export class ToolBox {
     }
 
     saveDrawings = () => {
-        const drawingMeta = []
-        for (const d of this._drawingTool.drawings) {
-            drawingMeta.push({
-                type: d._type,
-                points: d.points,
-                options: d._options
-            });
+        try {
+            const drawingMeta = []
+            for (const d of this._drawingTool.drawings) {
+                drawingMeta.push({
+                    type: d._type,
+                    points: d.points,
+                    options: d._options
+                });
+            }
+            const string = JSON.stringify(drawingMeta);
+            window.callbackFunction(`save_drawings${this._handlerID}_~_${string}`)
+        } catch (e) {
+            // Silently ignore errors when widget value is undefined
+            // This can happen during initialization or certain mouse interactions
         }
-        const string = JSON.stringify(drawingMeta);
-        window.callbackFunction(`save_drawings${this._handlerID}_~_${string}`)
     }
 
     loadDrawings(drawings: any[]) { // TODO any
@@ -176,5 +181,39 @@ export class ToolBox {
                     break;
             }
         })
+    }
+
+    getDrawingsData() {
+        const drawingMeta = []
+        for (const d of this._drawingTool.drawings) {
+            drawingMeta.push({
+                type: d._type,
+                points: d.points,
+                options: d._options
+            });
+        }
+        return drawingMeta;
+    }
+
+    logDrawingsToConsole() {
+        const drawingMeta = this.getDrawingsData();
+        console.log('=== Chart Drawings ===');
+        console.log(JSON.stringify(drawingMeta, null, 2));
+        console.log(`Total drawings: ${drawingMeta.length}`);
+        return drawingMeta;
+    }
+
+    downloadDrawingsAsFile(filename: string = 'drawings.json') {
+        const drawingMeta = this.getDrawingsData();
+        const dataStr = JSON.stringify(drawingMeta, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 }
